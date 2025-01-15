@@ -8,12 +8,17 @@ import fs from 'fs';
 const fileRouter = express.Router();
 
 
+let urlOfImage=''
+
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         
         const userId = req.body.userId 
 
         const userFolder = `./uploads/${userId}`;
+
+        urlOfImage+=userFolder
 
         
         if (!fs.existsSync(userFolder)) {
@@ -23,7 +28,9 @@ const storage = multer.diskStorage({
         cb(null, userFolder); 
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`); 
+        const uniqueName = `${Date.now()}-${file.originalname}`
+        urlOfImage += `/${uniqueName}`;
+        cb(null, uniqueName); 
     },
 });
 
@@ -51,8 +58,7 @@ const upload = multer({
 fileRouter.post('/upload',isAuth,isAdmin, upload.single('image'), (req, res) => {
     try {
         res.status(200).json({
-            message: 'File uploaded successfully!',
-            file: req.file,
+            message: urlOfImage,
         });
     } catch (err) {
         res.status(400).json({ error: err.message });
